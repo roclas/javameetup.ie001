@@ -1,0 +1,28 @@
+#!/bin/sh
+exec scala "$0" "$@"
+!#
+import scala.xml.XML
+def get(url: String) = scala.io.Source.fromURL(url).mkString
+val raw=(XML.loadFile("eurofxref-daily.xml") \\ "Cube").flatMap(x=>List(x.attribute("currency"),x.attribute("rate"))).flatten
+val euroValuesOriginal=raw.grouped(2).toList.map{case (a::b)=>(a.text,b.head.text.toFloat)}.toMap
+val euroValues=collection.mutable.Map(euroValuesOriginal.toSeq: _*)
+val currencies=euroValues.map(_._1).toList
+val currencyMatrix=currencies.combinations(2).toList.map(_.permutations.toList).flatten.groupBy(_.head).map{
+	case(k,l)=>{
+		(k,l.map(_.tail).flatten.map{x=>
+			(x,() => euroValues(k)/euroValues(x))
+		}.toMap)
+	}
+}
+
+
+def printTable=currencyMatrix map { row => row._2.map(f=>(s"${row._1}-${f._1}",f._2())).mkString("\n") } foreach {l=>println(s"${l}\n\n")}
+def printCurrency(c:String)=currencyMatrix(c).map(x=>(s"${c}-${x._1}",x._2())).mkString("\n") 
+
+//println(currencyMatrix)
+//euroValues("GBP")=(1.9).toFloat
+//euroValues("GBP")=(1.009).toFloat
+//println(currencyMatrix("GBP")("USD")())
+
+
+println("copy and paste the code in your scala interpreter")

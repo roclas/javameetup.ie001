@@ -1,0 +1,32 @@
+#!/bin/sh
+exec scala -cp /home/carlos/.ivy2/cache/com.lihaoyi/scalarx_2.11/jars/scalarx_2.11-0.3.1.jar "$0" "$@"
+!#
+
+import rx._
+
+object Main{
+ def main(args: Array[String]): Unit = {
+	implicit val ctx: Ctx.Owner = Ctx.Owner.safe()
+	val a = Var(1)
+	val b = Var(2)
+	
+	val c= Rx{ a() + b() }
+	
+	/*
+	val o1 = c.foreach{value => println(s"c has a new value: ${value}") }
+	*/
+
+	val o2 = c.trigger{ println(s"something changed, event triggered; $a+$b=${c.now}\n\n") }
+
+	println("a()=4")
+	a()=4;Thread sleep 2000
+	println("b()=12")
+	b()=12;Thread sleep 2000
+	println("a()=35")
+	a()=35
+ }
+}
+
+Main.main(Array[String]())
+
+

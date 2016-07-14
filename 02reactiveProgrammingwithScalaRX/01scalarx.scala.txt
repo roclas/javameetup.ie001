@@ -1,0 +1,14 @@
+#!/bin/sh
+exec scala -cp /home/carlos/.ivy2/cache/com.lihaoyi/scalarx_2.11/jars/scalarx_2.11-0.3.1.jar "$0" "$@"
+!#
+
+import rx._
+implicit val ctx: Ctx.Owner = Ctx.Owner.safe()
+
+val sum1 = Var(1)
+val sum2 = Var(4)
+val result = Rx{ sum1() + sum2() }
+println(s"$sum1+$sum2=${result.now}")
+sum1()=3
+println(s"$sum1+$sum2=${result.now}")
+
